@@ -15,12 +15,24 @@ namespace Eventix.Controllers
 
         public IActionResult Index()
         {
-            return View();
-        }
+            List<Event> events = new List<Event>();
 
-        public IActionResult Privacy()
-        {
-            return View();
+            Event event1 = new Event();
+            event1.EventId = 1;
+            event1.Name = "Concert";
+            event1.Description = "Music Concert";
+            event1.EventDate = DateTime.Now;
+
+            Event event2 = new Event();
+            event2.EventId = 2;
+            event2.Name = "Comedy";
+            event2.Description = "Comedy Show";
+            event2.EventDate = DateTime.Now;
+
+            events.Add(event1);
+            events.Add(event2);
+
+            return View(events);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
