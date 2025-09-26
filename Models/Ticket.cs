@@ -5,7 +5,6 @@
         public int TicketId { get; set; }
         public decimal Price { get; set; }
 
-        // Foreign key
-        public int EventId { get; set; }
+        public int PerformanceId { get; set; }
     }
 }

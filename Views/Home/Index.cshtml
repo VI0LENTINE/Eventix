@@ -1,18 +1,18 @@
-﻿@model List<Eventix.Models.Event>
+﻿@model List<Eventix.Models.Performance>
 
 @{
     ViewData["Title"] = "Home Page";
 }
 
-@foreach (var evt in Model)
+@foreach (var perform in Model)
 {
     <div>
         @* Event is a reserved keyword in C# *@
-        <h2>@evt.Name</h2>
+        <h2>@perform.Name</h2>
         <p>
-            @evt.EventId<br />
-            @evt.Description<br />
-            @evt.EventDate
+            @perform.PerformanceId<br />
+            @perform.Description<br />
+            @perform.PerformanceDate
         </p>
     </div>
 }

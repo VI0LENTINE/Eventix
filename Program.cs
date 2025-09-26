@@ -1,4 +1,9 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Eventix.Data;
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<EventixContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EventixContext") ?? throw new InvalidOperationException("Connection string 'EventixContext' not found.")));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

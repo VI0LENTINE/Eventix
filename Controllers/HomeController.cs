@@ -15,19 +15,19 @@ namespace Eventix.Controllers
 
         public IActionResult Index()
         {
-            List<Event> events = new List<Event>();
+            List<Performance> events = new List<Performance>();
 
-            Event event1 = new Event();
-            event1.EventId = 1;
+            Performance event1 = new Performance();
+            event1.PerformanceId = 1;
             event1.Name = "Concert";
             event1.Description = "Music Concert";
-            event1.EventDate = DateTime.Now;
+            event1.PerformanceDate = DateTime.Now;
 
-            Event event2 = new Event();
-            event2.EventId = 2;
+            Performance event2 = new Performance();
+            event2.PerformanceId = 2;
             event2.Name = "Comedy";
             event2.Description = "Comedy Show";
-            event2.EventDate = DateTime.Now;
+            event2.PerformanceDate = DateTime.Now;
 
             events.Add(event1);
             events.Add(event2);
