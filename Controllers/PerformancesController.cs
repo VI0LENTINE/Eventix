@@ -46,6 +46,7 @@ namespace Eventix.Controllers
         // GET: Performances/Create
         public IActionResult Create()
         {
+            //ViewData["CategoryId"] = new SelectList(_context.Category, "CategoryId", "Name");
             return View();
         }
 
@@ -54,16 +55,31 @@ namespace Eventix.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("PerformanceId,Name,Description,PerformanceDate,EndDate")] Performance performance)
+        public async Task<IActionResult> Create([Bind("PerformanceId,Name,Description,PerformanceDate,EndDate,ImagePath,Host,Location,CategoryId")] Performance performance)
         {
             if (ModelState.IsValid)
             {
+                var defaultCategory = await _context.Category.FirstOrDefaultAsync();
+                if (defaultCategory != null)
+                {
+                    performance.CategoryId = defaultCategory.CategoryId;
+                }
+                else
+                {
+                    defaultCategory = new Category { };
+                    _context.Category.Add(defaultCategory);
+                    await _context.SaveChangesAsync();
+                    performance.CategoryId = defaultCategory.CategoryId;
+                }
+
                 _context.Add(performance);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(performance);
         }
+
 
         // GET: Performances/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -86,7 +102,7 @@ namespace Eventix.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("PerformanceId,Name,Description,PerformanceDate,EndDate")] Performance performance)
+        public async Task<IActionResult> Edit(int id, [Bind("PerformanceId,Name,Description,PerformanceDate,EndDate,ImagePath,Host,Location,CategoryId")] Performance performance)
         {
             if (id != performance.PerformanceId)
             {

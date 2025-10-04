@@ -1,11 +1,10 @@
-html {
-  font-size: 14px;
-}
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap');
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+
+    }
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
@@ -13,10 +12,104 @@ html {
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
+}
+
+body.dark-mode table {
+    color: #f0f0f0; 
+}
+
+body.dark-mode .btn,
+body.dark-mode button {
+    background-color: #444;
+    color: white;
+    border: 1px solid #666;
+}
+
+body.dark-mode {
+    background-color: black;
+    color: white;
+}
+
+.dark-mode .eventix-intro {
+    background-color: black;
+    background: #333333;
+    border: solid 15px #444444;
+    color: white;
+}
+
+.dark-mode .performance-list {
+    background: #333333;
+    border: solid 15px #444444;
+    color: white;
+}
+
+.dark-mode-button {
+    padding: 5px;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    font-family: 'Oswald', sans-serif;
+    background-color: #d680ed;
+}
+
+.eventix-logo {
+    display: block;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+    object-fit: contain;
+}
+
+.home-container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+#eventix-title {
+    font-weight: bold;
+}
+
+.eventix-intro {
+    flex: 0 0 auto;
+}
+
+.eventix-intro {
+    background: #f2f2f2;
+    border: solid 15px #f2f2f2;
+    padding: 20px;
+    border: solid 15px #e0e0e0;
+    border-radius: 15px;
+}
+
+.performance-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto;
+}
+
+.performance-column {
+    margin-left: auto;
+    margin-right: 3rem;
+}
+
+.performance-list {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    background: #f2f2f2;
+    border: solid 15px #e0e0e0;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 650px;
+    margin: 8px;
+}
+
+.footer .container {
+    color: white;
 }

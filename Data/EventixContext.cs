@@ -13,7 +13,7 @@ namespace Eventix.Data
             : base(options)
         {
         }
-
         public DbSet<Eventix.Models.Performance> Performance { get; set; } = default!;
+        public DbSet<Eventix.Models.Category> Category { get; set; }
     }
 }

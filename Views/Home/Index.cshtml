@@ -4,15 +4,33 @@
     ViewData["Title"] = "Home Page";
 }
 
-@foreach (var perform in Model)
-{
-    <div>
-        @* Event is a reserved keyword in C# *@
-        <h2>@perform.Name</h2>
-        <p>
-            @perform.PerformanceId<br />
-            @perform.Description<br />
-            @perform.PerformanceDate
-        </p>
+<div class="home-container">
+
+    <div class="eventix-intro">
+        <div id="eventix-title">
+            <img src="~/images/Eventix_Logo_2.jpg" alt="Eventix Logo" class="eventix-logo" />
+            <h1>Welcome to Eventix!</h1>
+        </div>
+
+        @* <h2>Event categories:</h2>
+        <a href="#">Music</a>
+        <a href="#">Comedy</a>
+        <a href="#">Sports</a> *@
     </div>
-}
+
+    <div class="performance-list">
+        @foreach (var perform in Model)
+        {
+            <img src="@perform.ImagePath" alt="@perform.Description" class="img-fluid rounded mb-2 performance-img" />
+            <h2>@perform.Name</h2>
+            <p>
+                @* @perform.PerformanceId<br /> *@
+                @perform.Description<br />
+                @perform.Location<br />
+                @perform.Host<br />
+                @perform.PerformanceDate
+                - @perform.EndDate
+            </p>
+        }
+    </div>
+</div>
