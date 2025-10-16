@@ -14,7 +14,7 @@ namespace Eventix.Models
         public DateTime EndDate { get; set; }
 
         [NotMapped]
-        [Display(Name = "ImageFilepath")]
+        [Display(Name = "Image")]
         public IFormFile? FormFile { get; set; } // nullable
         public string? ImagePath { get; set; }
 

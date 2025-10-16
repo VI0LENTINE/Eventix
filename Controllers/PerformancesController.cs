@@ -55,70 +55,71 @@ namespace Eventix.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("PerformanceId,Name,Description,PerformanceDate,EndDate,ImagePath,Host,Location,CategoryId")] Performance performance)
+        public async Task<IActionResult> Create([Bind("PerformanceId,Name,Description,PerformanceDate,EndDate,ImagePath,FormFile,Host,Location,CategoryId")] Performance performance)
         {
             // Initialize values
             //performance.CreateDate = DateTime.Now;
 
             // Validate user input
-            //if (ModelState.IsValid)
-            //{
-            //    //
-            //    // Step 1: save the file (optionally)
-            //    //
-            //    if (photo.FormFile != null)
-            //    {
-            //        // Create a unique filename using a Guid          
-            //        string filename = Guid.NewGuid().ToString() + Path.GetExtension(photo.FormFile.FileName); // f81d4fae-7dec-11d0-a765-00a0c91e6bf6.jpg
-
-            //        // Initialize the filename in photo record
-            //        photo.Filename = filename;
-
-            //        // Get the file path to save the file. Use Path.Combine to handle diffferent OS
-            //        string saveFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "photos", filename);
-
-            //        // Save file
-            //        using (FileStream fileStream = new FileStream(saveFilePath, FileMode.Create))
-            //        {
-            //            await photo.FormFile.CopyToAsync(fileStream);
-            //        }
-            //    }
-
-            //    //
-            //    // Step 2: save record in database
-            //    //
-
-            //    _context.Add(photo);
-
-            //    await _context.SaveChangesAsync();
-
-            //    return RedirectToAction(nameof(Index), "Home"); // Go back to Home Index
-            //}
-
-            //ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "CategoryId", "Title", photo.CategoryId);
-
-            //return View(photo);
             if (ModelState.IsValid)
             {
-                var defaultCategory = await _context.Category.FirstOrDefaultAsync();
-                if (defaultCategory != null)
+                //
+                // Step 1: save the file (optionally)
+                //
+                if (performance.FormFile != null)
                 {
-                    performance.CategoryId = defaultCategory.CategoryId;
+                    // Create a unique filename using a Guid          
+                    string filename = Guid.NewGuid().ToString() + Path.GetExtension(performance.FormFile.FileName); // f81d4fae-7dec-11d0-a765-00a0c91e6bf6.jpg
+
+                    // Initialize the filename in photo record
+                    performance.ImagePath = filename;
+
+                    // Get the file path to save the file. Use Path.Combine to handle diffferent OS
+                    string saveFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", filename);
+
+                    // Save file
+                    using (FileStream fileStream = new FileStream(saveFilePath, FileMode.Create))
+                    {
+                        await performance.FormFile.CopyToAsync(fileStream);
+                    }
                 }
-                else
-                {
-                    defaultCategory = new Category { };
-                    _context.Category.Add(defaultCategory);
-                    await _context.SaveChangesAsync();
-                    performance.CategoryId = defaultCategory.CategoryId;
-                }
+
+                //
+                // Step 2: save record in database
+                //
 
                 _context.Add(performance);
+
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+                return RedirectToAction(nameof(Index), "Performances"); // Perfomances index page
             }
 
+            ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "CategoryId", "Title", performance.CategoryId);
+
             return View(performance);
+
+            //if (ModelState.IsValid)
+            //{
+            //    var defaultCategory = await _context.Category.FirstOrDefaultAsync();
+            //    if (defaultCategory != null)
+            //    {
+            //        performance.CategoryId = defaultCategory.CategoryId;
+            //    }
+            //    else
+            //    {
+            //        defaultCategory = new Category { };
+            //        _context.Category.Add(defaultCategory);
+            //        await _context.SaveChangesAsync();
+            //        performance.CategoryId = defaultCategory.CategoryId;
+            //    }
+
+            //    _context.Add(performance);
+            //    await _context.SaveChangesAsync();
+            //    return RedirectToAction(nameof(Index));
+            //}
+
+            //return View(performance);
         }
 
 

@@ -113,3 +113,8 @@ body {
 .footer .container {
     color: white;
 }
+
+.thumbnail {
+    height: 200px;
+    max-width: 300px;
+}

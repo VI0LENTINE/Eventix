@@ -36,7 +36,7 @@ namespace Eventix.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Category");
+                    b.ToTable("Category", (string)null);
                 });
 
             modelBuilder.Entity("Eventix.Models.Performance", b =>
@@ -79,7 +79,7 @@ namespace Eventix.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Performance");
+                    b.ToTable("Performance", (string)null);
                 });
 
             modelBuilder.Entity("Eventix.Models.Performance", b =>
