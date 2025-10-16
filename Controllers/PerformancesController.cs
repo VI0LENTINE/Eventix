@@ -98,28 +98,6 @@ namespace Eventix.Controllers
             ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "CategoryId", "Title", performance.CategoryId);
 
             return View(performance);
-
-            //if (ModelState.IsValid)
-            //{
-            //    var defaultCategory = await _context.Category.FirstOrDefaultAsync();
-            //    if (defaultCategory != null)
-            //    {
-            //        performance.CategoryId = defaultCategory.CategoryId;
-            //    }
-            //    else
-            //    {
-            //        defaultCategory = new Category { };
-            //        _context.Category.Add(defaultCategory);
-            //        await _context.SaveChangesAsync();
-            //        performance.CategoryId = defaultCategory.CategoryId;
-            //    }
-
-            //    _context.Add(performance);
-            //    await _context.SaveChangesAsync();
-            //    return RedirectToAction(nameof(Index));
-            //}
-
-            //return View(performance);
         }
 
 
@@ -153,6 +131,25 @@ namespace Eventix.Controllers
 
             if (ModelState.IsValid)
             {
+                //
+                // step 1: save the file
+                //
+                if (performance.FormFile != null)
+                {
+
+                    // determine new filename
+
+                    // set the new filename in the db record
+
+                    // upload the new file
+
+                    // delete the old file
+                }
+
+                //
+                // step 2: save in database
+                //
+
                 try
                 {
                     _context.Update(performance);
