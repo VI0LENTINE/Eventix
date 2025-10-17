@@ -5,6 +5,7 @@ namespace Eventix.Models
 {
     public class Performance
     {
+        [Display(Name = "Id")]
         public int PerformanceId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
@@ -18,6 +19,7 @@ namespace Eventix.Models
         public IFormFile? FormFile { get; set; } // nullable
         public string? ImagePath { get; set; }
 
+        [Display(Name = "Category")]
         public int? CategoryId { get; set; }
         public Category? Category { get; set; }
     }

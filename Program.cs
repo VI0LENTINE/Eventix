@@ -1,12 +1,26 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Eventix.Data;
+using Microsoft.AspNetCore.Authentication.Cookies;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<EventixContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("EventixContext") ?? throw new InvalidOperationException("Connection string 'EventixContext' not found.")));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Add cookie authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+        options.SlidingExpiration = true; // Reset the expiration time if the user is active
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Account/AccessDenied";
+    });
+
 
 var app = builder.Build();
 
@@ -23,10 +37,13 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// Add authentication
+app.UseAuthentication();
+
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Performances}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
