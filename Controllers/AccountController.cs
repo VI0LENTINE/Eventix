@@ -7,8 +7,7 @@ namespace Eventix.Controllers
 {
     public class AccountController : Controller
     {
-        //Reads values from appsettings.json
-        //Resource: https://www.c-sharpcorner.com/article/asp-net-core-how-to-use-appsettings-json-and-iconfiguration/
+
         private readonly IConfiguration _configuration;
 
         public AccountController(IConfiguration configuration)
@@ -31,12 +30,9 @@ namespace Eventix.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(string username, string password, string returnUrl)
         {
-            // Added credentials in configuration file
-            var storedUsername = _configuration["AdminCredentials:Username"];
-            var storedPassword = _configuration["AdminCredentials:Password"];
 
             // Validate username and password
-            if (username == storedUsername && password == storedPassword)
+            if (username == _configuration["eventix_username"] && password == _configuration["eventix_password"])
             {
                 // Create a list of claims identifying the user
                 var claims = new List<Claim>

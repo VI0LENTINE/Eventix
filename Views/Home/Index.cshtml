@@ -37,7 +37,7 @@
                 <td>
                     @if (!String.IsNullOrEmpty(item.ImagePath))
                     {
-                        <img src="/images/@item.ImagePath" alt="@item.Name" class="thumbnail" />
+                        <img src="@item.ImagePath" alt="@item.Name" class="thumbnail" />
                     }
                 </td>
                 <td>
@@ -54,48 +54,10 @@
                 </td>
                 <td>
                     <a asp-controller="Performances" asp-action="Edit" asp-route-id="@item.PerformanceId">Edit</a> |
-                    <a asp-controller="Performances" asp-action="Details" asp-route-id="@item.PerformanceId">Details</a> |
+                    <a asp-controller="Home" asp-action="Details" asp-route-id="@item.PerformanceId">Details</a> |
                     <a asp-controller="Performances" asp-action="Delete" asp-route-id="@item.PerformanceId">Delete</a>
                 </td>
             </tr>
         }
     </tbody>
 </table>
-
-
-@* @model List<Eventix.Models.Performance>
-
-@{
-    ViewData["Title"] = "Home Page";
-}
-
-<div class="home-container">
-
-    <div class="eventix-intro">
-        <div id="eventix-title">
-            <img src="~/images/Eventix_Logo_2.jpg" alt="Eventix Logo" class="eventix-logo" />
-            <h1>Welcome to Eventix!</h1>
-        </div>
-
-        @* <h2>Event categories:</h2>
-        <a href="#">Music</a>
-        <a href="#">Comedy</a>
-        <a href="#">Sports</a> *@
-    @* </div> *@
-
-@*     <div class="performance-list">
-        @foreach (var perform in Model)
-        {
-            <img src="@perform.ImagePath" alt="@perform.Description" class="img-fluid rounded mb-2 performance-img" />
-            <h2>@perform.Name</h2>
-            <p>
-                @* @perform.PerformanceId<br /> *@
-                @* @perform.Description<br />
-                @perform.Location<br />
-                @perform.Host<br />
-                @perform.PerformanceDate
-                - @perform.EndDate *@
-@*             </p>
-        }
-    </div>
-</div> *@

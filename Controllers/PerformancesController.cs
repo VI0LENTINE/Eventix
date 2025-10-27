@@ -1,13 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Eventix.Data;
 using Eventix.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Eventix.Controllers
 {
@@ -15,10 +17,17 @@ namespace Eventix.Controllers
     public class PerformancesController : Controller
     {
         private readonly EventixContext _context;
+        private readonly IConfiguration _configuration;
+        private readonly BlobContainerClient _containerClient;
 
-        public PerformancesController(EventixContext context)
+        public PerformancesController(EventixContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
+
+            var connectionString = _configuration.GetConnectionString("AzureStorage");
+            var containerName = "eventix-uploads";
+            _containerClient = new BlobContainerClient(connectionString, containerName);
         }
 
         // GET: Performances
@@ -60,51 +69,50 @@ namespace Eventix.Controllers
         public async Task<IActionResult> Create([Bind("PerformanceId,Name,Description,PerformanceDate,EndDate,ImagePath,FormFile,Host,Location,CategoryId")] Performance performance)
         {
             // Initialize values
-            //performance.CreateDate = DateTime.Now;
+            // performance.CreateDate = DateTime.Now;
 
             // Validate user input
             if (ModelState.IsValid)
             {
                 //
-                // Step 1: save the file (optionally)
+                // Step 1: Save the file (optionally)
                 //
                 if (performance.FormFile != null)
                 {
-                    // Create a unique filename using a Guid          
-                    string filename = Guid.NewGuid().ToString() + Path.GetExtension(performance.FormFile.FileName); // f81d4fae-7dec-11d0-a765-00a0c91e6bf6.jpg
+                    // Upload file to Azure Blob Storage
+                    IFormFile fileUpload = performance.FormFile;
 
-                    // Initialize the filename in photo record
-                    performance.ImagePath = filename;
+                    // Create a unique filename for the blob
+                    string blobName = Guid.NewGuid().ToString() + "_" + fileUpload.FileName;
+                    var blobClient = _containerClient.GetBlobClient(blobName);
 
-                    // Get the file path to save the file. Use Path.Combine to handle diffferent OS
-                    string saveFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", filename);
-
-                    // Save file
-                    using (FileStream fileStream = new FileStream(saveFilePath, FileMode.Create))
+                    using (var stream = fileUpload.OpenReadStream())
                     {
-                        await performance.FormFile.CopyToAsync(fileStream);
+                        await blobClient.UploadAsync(stream, new BlobHttpHeaders
+                        {
+                            ContentType = fileUpload.ContentType
+                        });
                     }
-                }
 
+                    // Assign the blob URL to the record to save in the database
+                    performance.ImagePath = blobClient.Uri.ToString();
+                }
                 else
                 {
                     // Placeholder image if no image chosen
-                    performance.ImagePath = "microphone.jpg"; 
+                    performance.ImagePath = "https://nscc0516070storageblob.blob.core.windows.net/eventix-uploads/microphone.jpg";
                 }
 
                 //
-                // Step 2: save record in database
+                // Step 2: Save record in database
                 //
-
                 _context.Add(performance);
-
                 await _context.SaveChangesAsync();
 
                 return RedirectToAction(nameof(Index), "Home"); // Home index page
             }
 
             ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "CategoryId", "Title", performance.CategoryId);
-
             return View(performance);
         }
 
@@ -150,22 +158,33 @@ namespace Eventix.Controllers
                         string newFileName = Guid.NewGuid().ToString() + Path.GetExtension(performance.FormFile.FileName);
 
                         // upload the new file
-                        string savePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", newFileName);
-                        using (FileStream stream = new FileStream(savePath, FileMode.Create))
+                        var blobContainerClient = new BlobContainerClient(_configuration.GetConnectionString("AzureStorage"), "eventix-uploads");
+                        var blobClient = blobContainerClient.GetBlobClient(newFileName);
+
+                        using (var stream = performance.FormFile.OpenReadStream())
                         {
-                            await performance.FormFile.CopyToAsync(stream);
+                            await blobClient.UploadAsync(stream, true);
                         }
 
                         // delete the old file
                         if (!string.IsNullOrEmpty(existingPerformance?.ImagePath))
                         {
-                            string oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", existingPerformance.ImagePath);
-                            if (System.IO.File.Exists(oldFilePath))
-                                System.IO.File.Delete(oldFilePath);
+                            try
+                            {
+                                var oldBlobUri = new Uri(existingPerformance.ImagePath);
+                                string oldBlobName = Path.GetFileName(oldBlobUri.LocalPath);
+                                var oldBlobClient = blobContainerClient.GetBlobClient(oldBlobName);
+                                await oldBlobClient.DeleteIfExistsAsync();
+                            }
+                            catch (Exception ex)
+                            {
+                                // optional: log the error instead of breaking the edit flow
+                                Console.WriteLine($"Error deleting old blob: {ex.Message}");
+                            }
                         }
 
                         // set the new filename in the db record
-                        performance.ImagePath = newFileName;
+                        performance.ImagePath = blobClient.Uri.ToString();
                     }
                     else
                     {
@@ -188,6 +207,7 @@ namespace Eventix.Controllers
                 }
             }
 
+            // If model state invalid, redisplay form
             return View(performance);
         }
 
@@ -215,18 +235,39 @@ namespace Eventix.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var performance = await _context.Performance.FindAsync(id);
-            if (performance != null)
+            if (performance == null)
+                return NotFound();
+
+            // Safely delete image from Azure Blob Storage (if valid)
+            if (!string.IsNullOrEmpty(performance.ImagePath) &&
+                Uri.IsWellFormedUriString(performance.ImagePath, UriKind.Absolute))
             {
-                _context.Performance.Remove(performance);
+                try
+                {
+                    var blobUri = new Uri(performance.ImagePath);
+                    string blobName = Path.GetFileName(blobUri.LocalPath);
+
+                    var blobContainerClient = new BlobContainerClient(
+                        _configuration.GetConnectionString("AzureStorage"),
+                        "eventix-uploads"
+                    );
+
+                    var blobClient = blobContainerClient.GetBlobClient(blobName);
+                    await blobClient.DeleteIfExistsAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error deleting blob: {ex.Message}");
+                }
             }
 
+            // Remove the performance record from the database
+            _context.Performance.Remove(performance);
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index), "Home");
         }
 
-        //private bool PerformanceExists(int id)
-        //{
-        //    return _context.Performance.Any(e => e.PerformanceId == id);
-        //}
+
     }
 }
