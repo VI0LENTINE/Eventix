@@ -10,9 +10,14 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
             <input type="hidden" asp-for="PerformanceId" />
+
+            <!-- Include the original filename in the form -->
+            <input type="hidden" asp-for="ImagePath" />
+
             <div class="form-group">
                 <label asp-for="Name" class="control-label"></label>
                 <input asp-for="Name" class="form-control" />
@@ -25,17 +30,20 @@
             </div>
             <div class="form-group">
                 <label asp-for="PerformanceDate" class="control-label"></label>
-                <input asp-for="PerformanceDate" class="form-control" />
+                <input asp-for="PerformanceDate" class="form-control" readonly />
                 <span asp-validation-for="PerformanceDate" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="EndDate" class="control-label"></label>
-                <input asp-for="EndDate" class="form-control" />
+                <input asp-for="EndDate" class="form-control" readonly />
                 <span asp-validation-for="EndDate" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="FormFile" class="control-label"></label>
-                <input asp-for="FormFile" type="file" class="form-control" />
+            <div>
+                <img src="/images/@Model.ImagePath" alt="@Model.Name" class="thumbnail" />
+            </div>
+            <div class="mb-3">
+                <label class="control-label">Change Photo:</label>
+                <input asp-for="FormFile" class="form-control" />
                 <span asp-validation-for="FormFile" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -46,7 +54,7 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-controller="Home" asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {

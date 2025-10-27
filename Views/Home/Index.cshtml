@@ -1,4 +1,69 @@
-﻿@model List<Eventix.Models.Performance>
+﻿@model IEnumerable<Eventix.Models.Performance>
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-controller="Performances" asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.FormFile)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PerformanceDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EndDate)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @if (!String.IsNullOrEmpty(item.ImagePath))
+                    {
+                        <img src="/images/@item.ImagePath" alt="@item.Name" class="thumbnail" />
+                    }
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PerformanceDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EndDate)
+                </td>
+                <td>
+                    <a asp-controller="Performances" asp-action="Edit" asp-route-id="@item.PerformanceId">Edit</a> |
+                    <a asp-controller="Performances" asp-action="Details" asp-route-id="@item.PerformanceId">Details</a> |
+                    <a asp-controller="Performances" asp-action="Delete" asp-route-id="@item.PerformanceId">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+@* @model List<Eventix.Models.Performance>
 
 @{
     ViewData["Title"] = "Home Page";
@@ -16,21 +81,21 @@
         <a href="#">Music</a>
         <a href="#">Comedy</a>
         <a href="#">Sports</a> *@
-    </div>
+    @* </div> *@
 
-    <div class="performance-list">
+@*     <div class="performance-list">
         @foreach (var perform in Model)
         {
             <img src="@perform.ImagePath" alt="@perform.Description" class="img-fluid rounded mb-2 performance-img" />
             <h2>@perform.Name</h2>
             <p>
                 @* @perform.PerformanceId<br /> *@
-                @perform.Description<br />
+                @* @perform.Description<br />
                 @perform.Location<br />
                 @perform.Host<br />
                 @perform.PerformanceDate
-                - @perform.EndDate
-            </p>
+                - @perform.EndDate *@
+@*             </p>
         }
     </div>
-</div>
+</div> *@

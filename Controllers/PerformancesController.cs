@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Eventix.Data;
 using Eventix.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Eventix.Controllers
 {
+    [Authorize]
     public class PerformancesController : Controller
     {
         private readonly EventixContext _context;
@@ -84,6 +86,12 @@ namespace Eventix.Controllers
                     }
                 }
 
+                else
+                {
+                    // Placeholder image if no image chosen
+                    performance.ImagePath = "microphone.jpg"; 
+                }
+
                 //
                 // Step 2: save record in database
                 //
@@ -92,7 +100,7 @@ namespace Eventix.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return RedirectToAction(nameof(Index), "Performances"); // Perfomances index page
+                return RedirectToAction(nameof(Index), "Home"); // Home index page
             }
 
             ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "CategoryId", "Title", performance.CategoryId);
@@ -122,52 +130,64 @@ namespace Eventix.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("PerformanceId,Name,Description,PerformanceDate,EndDate,ImagePath,Host,Location,CategoryId")] Performance performance)
+        public async Task<IActionResult> Edit(int id, [Bind("PerformanceId,Name,Description,PerformanceDate,EndDate,ImagePath,FormFile,Host,Location,CategoryId")] Performance performance)
         {
             if (id != performance.PerformanceId)
-            {
                 return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
-                //
-                // step 1: save the file
-                //
-                if (performance.FormFile != null)
-                {
-
-                    // determine new filename
-
-                    // set the new filename in the db record
-
-                    // upload the new file
-
-                    // delete the old file
-                }
-
-                //
-                // step 2: save in database
-                //
-
                 try
                 {
-                    _context.Update(performance);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!PerformanceExists(performance.PerformanceId))
+                    // Get existing record to preserve old file if needed
+                    var existingPerformance = await _context.Performance.AsNoTracking()
+                        .FirstOrDefaultAsync(p => p.PerformanceId == id);
+
+                    // step 1: save the file
+                    if (performance.FormFile != null)
                     {
-                        return NotFound();
+                        // determine new filename
+                        string newFileName = Guid.NewGuid().ToString() + Path.GetExtension(performance.FormFile.FileName);
+
+                        // upload the new file
+                        string savePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", newFileName);
+                        using (FileStream stream = new FileStream(savePath, FileMode.Create))
+                        {
+                            await performance.FormFile.CopyToAsync(stream);
+                        }
+
+                        // delete the old file
+                        if (!string.IsNullOrEmpty(existingPerformance?.ImagePath))
+                        {
+                            string oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", existingPerformance.ImagePath);
+                            if (System.IO.File.Exists(oldFilePath))
+                                System.IO.File.Delete(oldFilePath);
+                        }
+
+                        // set the new filename in the db record
+                        performance.ImagePath = newFileName;
                     }
                     else
                     {
-                        throw;
+                        // No new file uploaded, keep existing filename
+                        performance.ImagePath = existingPerformance?.ImagePath;
                     }
+
+                    // step 2: save in database
+                    _context.Update(performance);
+                    await _context.SaveChangesAsync();
+
+                    return RedirectToAction(nameof(Index), "Home");
                 }
-                return RedirectToAction(nameof(Index));
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.Performance.Any(e => e.PerformanceId == performance.PerformanceId))
+                        return NotFound();
+                    else
+                        throw;
+                }
             }
+
             return View(performance);
         }
 
@@ -201,12 +221,12 @@ namespace Eventix.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), "Home");
         }
 
-        private bool PerformanceExists(int id)
-        {
-            return _context.Performance.Any(e => e.PerformanceId == id);
-        }
+        //private bool PerformanceExists(int id)
+        //{
+        //    return _context.Performance.Any(e => e.PerformanceId == id);
+        //}
     }
 }

@@ -7,9 +7,12 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Eventix.Data;
 using Eventix.Models;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace Eventix.Controllers
 {
+    [Authorize]
     public class CategoriesController : Controller
     {
         private readonly EventixContext _context;
