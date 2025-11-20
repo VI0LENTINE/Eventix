@@ -5,7 +5,7 @@
 namespace Eventix.Migrations
 {
     /// <inheritdoc />
-    public partial class PurchasesControllerAdded : Migration
+    public partial class SecondRestartInitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

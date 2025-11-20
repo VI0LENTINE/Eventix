@@ -89,7 +89,7 @@ namespace Eventix.Controllers
                 else
                 {
                     // Placeholder image if no image chosen
-                    performance.ImagePath = "microphone.jpg"; 
+                    performance.ImagePath = "microphone.jpg";
                 }
 
                 //

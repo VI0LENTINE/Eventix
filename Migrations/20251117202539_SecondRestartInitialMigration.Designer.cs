@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Eventix.Migrations
 {
     [DbContext(typeof(EventixContext))]
-    [Migration("20251115231442_PurchaseModelCreatedAndControllerRemade")]
-    partial class PurchaseModelCreatedAndControllerRemade
+    [Migration("20251117202539_SecondRestartInitialMigration")]
+    partial class SecondRestartInitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -83,40 +83,6 @@ namespace Eventix.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Performance");
-                });
-
-            modelBuilder.Entity("Eventix.Models.Purchase", b =>
-                {
-                    b.Property<int>("PurchaseId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PurchaseId"));
-
-                    b.Property<string>("CardLast4")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CustomerName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("EventId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("PurchaseDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Tickets")
-                        .HasColumnType("int");
-
-                    b.HasKey("PurchaseId");
-
-                    b.ToTable("Purchase");
                 });
 
             modelBuilder.Entity("Eventix.Models.Performance", b =>
