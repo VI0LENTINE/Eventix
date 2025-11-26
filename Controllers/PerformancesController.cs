@@ -36,7 +36,10 @@ namespace Eventix.Controllers
             }
 
             var performance = await _context.Performance
+                .Include(p => p.Purchases)
+                .Include(p => p.Category)
                 .FirstOrDefaultAsync(m => m.PerformanceId == id);
+
             if (performance == null)
             {
                 return NotFound();

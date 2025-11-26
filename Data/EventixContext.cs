@@ -14,6 +14,7 @@ namespace Eventix.Data
         {
         }
         public DbSet<Eventix.Models.Performance> Performance { get; set; } = default!;
-        public DbSet<Eventix.Models.Category> Category { get; set; }
+        public DbSet<Eventix.Models.Category> Category { get; set; } = default!;
+        public DbSet<Eventix.Models.Purchase> Purchases { get; set; } = default!;
     }
 }

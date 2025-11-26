@@ -4,7 +4,14 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<h1>Event Details</h1>
+
+@if (!String.IsNullOrEmpty(Model.ImagePath))
+{
+    <div>
+        <img src="/images/@Model.ImagePath" alt="@Model.Name" class="w-25 l-25" />
+    </div>
+}
 
 <div>
     <h4>Performance</h4>
@@ -39,4 +46,44 @@
 <div>
     <a asp-controller="Performances" asp-action="Edit" asp-route-id="@Model?.PerformanceId">Edit</a> |
     <a asp-controller="Home" asp-action="Index">Back to List</a>
+</div>
+
+
+<div class="col-12 mt-4">
+    <h2>Tickets</h2>
+    <hr />    
+    @if (Model?.Purchases?.Any() == true)
+    {
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Purchase ID</th>
+                    <th>Performance ID</th>
+                    <th>Number of Tickets</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Last 4 Card Digits</th>
+                    <th>Purchase Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var purchase in Model.Purchases)
+                {
+                    <tr>
+                        <td>@purchase.PurchaseId</td>
+                        <td>@purchase.PerformanceId</td>
+                        <td>@purchase.Tickets</td>
+                        <td>@purchase.CustomerName</td>
+                        <td>@purchase.Email</td>
+                        <td>@purchase.CardLast4</td>
+                        <td>@purchase.PurchaseDate.ToString("g")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p class="text-muted">No Purchased Tickets</p>
+    }
 </div>
