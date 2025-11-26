@@ -26,6 +26,7 @@ namespace Eventix.Controllers
             var performances = await _context.Performance
                 .OrderByDescending(m => m.PerformanceDate)
                 .Include(p => p.Category)
+                .Include(p => p.Purchases)
                 .ToListAsync();
 
             return View(performances);

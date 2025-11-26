@@ -21,6 +21,10 @@ namespace Eventix.Models
 
         [Display(Name = "Category")]
         public int? CategoryId { get; set; }
-        public Category? Category { get; set; }
+
+        // Navigation properties
+        public Category? Category { get; set; } // nullable
+        public List<Purchase>? Purchases { get; set; } // nullable
+
     }
 }
