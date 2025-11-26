@@ -42,6 +42,7 @@ namespace Eventix.Controllers
 
             var photo = await _context.Performance
                 .Include(p => p.Category)
+                .Include(p => p.Purchases)
                 .FirstOrDefaultAsync(m => m.PerformanceId == id);
 
             if (photo == null)
