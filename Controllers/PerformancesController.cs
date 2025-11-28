@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Eventix.Data;
 using Eventix.Models;
 using Microsoft.AspNetCore.Authorization;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+
 
 namespace Eventix.Controllers
 {
@@ -15,10 +18,12 @@ namespace Eventix.Controllers
     public class PerformancesController : Controller
     {
         private readonly EventixContext _context;
+        private readonly BlobServiceClient _blobService;
 
-        public PerformancesController(EventixContext context)
+        public PerformancesController(EventixContext context, BlobServiceClient blobService)
         {
             _context = context;
+            _blobService = blobService;
         }
 
         // GET: Performances
@@ -51,7 +56,6 @@ namespace Eventix.Controllers
         // GET: Performances/Create
         public IActionResult Create()
         {
-            //ViewData["CategoryId"] = new SelectList(_context.Category, "CategoryId", "Name");
             return View();
         }
 
@@ -76,17 +80,14 @@ namespace Eventix.Controllers
                     // Create a unique filename using a Guid          
                     string filename = Guid.NewGuid().ToString() + Path.GetExtension(performance.FormFile.FileName); // f81d4fae-7dec-11d0-a765-00a0c91e6bf6.jpg
 
-                    // Initialize the filename in photo record
-                    performance.ImagePath = filename;
+                    var container = _blobService.GetBlobContainerClient("performance-images");
+                    await container.CreateIfNotExistsAsync();
+                    await container.SetAccessPolicyAsync(PublicAccessType.Blob);
 
-                    // Get the file path to save the file. Use Path.Combine to handle diffferent OS
-                    string saveFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", filename);
+                    var blob = container.GetBlobClient(filename);
+                    await blob.UploadAsync(performance.FormFile.OpenReadStream(), overwrite: true);
 
-                    // Save file
-                    using (FileStream fileStream = new FileStream(saveFilePath, FileMode.Create))
-                    {
-                        await performance.FormFile.CopyToAsync(fileStream);
-                    }
+                    performance.ImagePath = blob.Uri.ToString();
                 }
 
                 else
@@ -138,60 +139,72 @@ namespace Eventix.Controllers
             if (id != performance.PerformanceId)
                 return NotFound();
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(performance);
+
+            try
             {
-                try
+                //
+                // Get the existing DB record
+                //
+                var existingPerformance = await _context.Performance
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.PerformanceId == id);
+
+                if (existingPerformance == null)
+                    return NotFound();
+
+                //
+                // Blob container reference
+                //
+                var container = _blobService.GetBlobContainerClient("performance-images");
+                await container.CreateIfNotExistsAsync();
+                await container.SetAccessPolicyAsync(PublicAccessType.Blob);
+
+                //
+                // If new file uploaded, upload new blob, delete old blob
+                //
+                if (performance.FormFile != null)
                 {
-                    // Get existing record to preserve old file if needed
-                    var existingPerformance = await _context.Performance.AsNoTracking()
-                        .FirstOrDefaultAsync(p => p.PerformanceId == id);
+                    string newFileName = Guid.NewGuid().ToString() + Path.GetExtension(performance.FormFile.FileName);
 
-                    // step 1: save the file
-                    if (performance.FormFile != null)
+                    // Upload new blob
+                    var newBlob = container.GetBlobClient(newFileName);
+                    await newBlob.UploadAsync(performance.FormFile.OpenReadStream(), overwrite: true);
+
+                    // Delete old blob
+                    if (!string.IsNullOrEmpty(existingPerformance.ImagePath))
                     {
-                        // determine new filename
-                        string newFileName = Guid.NewGuid().ToString() + Path.GetExtension(performance.FormFile.FileName);
-
-                        // upload the new file
-                        string savePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", newFileName);
-                        using (FileStream stream = new FileStream(savePath, FileMode.Create))
-                        {
-                            await performance.FormFile.CopyToAsync(stream);
-                        }
-
-                        // delete the old file
-                        if (!string.IsNullOrEmpty(existingPerformance?.ImagePath))
-                        {
-                            string oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", existingPerformance.ImagePath);
-                            if (System.IO.File.Exists(oldFilePath))
-                                System.IO.File.Delete(oldFilePath);
-                        }
-
-                        // set the new filename in the db record
-                        performance.ImagePath = newFileName;
-                    }
-                    else
-                    {
-                        // No new file uploaded, keep existing filename
-                        performance.ImagePath = existingPerformance?.ImagePath;
+                        // Extract filename if ImagePath is URL
+                        string oldFilename = existingPerformance.ImagePath.Split('/').Last();
+                        var oldBlob = container.GetBlobClient(oldFilename);
+                        await oldBlob.DeleteIfExistsAsync();
                     }
 
-                    // step 2: save in database
-                    _context.Update(performance);
-                    await _context.SaveChangesAsync();
-
-                    return RedirectToAction(nameof(Index), "Home");
+                    // Save new blob URL or filename
+                    performance.ImagePath = newBlob.Uri.ToString();
                 }
-                catch (DbUpdateConcurrencyException)
+                else
                 {
-                    if (!_context.Performance.Any(e => e.PerformanceId == performance.PerformanceId))
-                        return NotFound();
-                    else
-                        throw;
+                    // KEEP the old filename / URL
+                    performance.ImagePath = existingPerformance.ImagePath;
                 }
+
+                //
+                // Update record in DB
+                //
+                _context.Update(performance);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Index), "Home");
             }
-
-            return View(performance);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Performance.Any(e => e.PerformanceId == performance.PerformanceId))
+                    return NotFound();
+                else
+                    throw;
+            }
         }
 
         // GET: Performances/Delete/5
@@ -226,10 +239,5 @@ namespace Eventix.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index), "Home");
         }
-
-        //private bool PerformanceExists(int id)
-        //{
-        //    return _context.Performance.Any(e => e.PerformanceId == id);
-        //}
     }
 }

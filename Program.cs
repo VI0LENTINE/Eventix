@@ -1,10 +1,15 @@
-﻿using Eventix.Data;
+﻿using Azure.Storage.Blobs;
+using Eventix.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<EventixContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("EventixContext") ?? throw new InvalidOperationException("Connection string 'EventixContext' not found.")));
+
+// Adding Azurite blob storage.
+builder.Services.AddSingleton(x =>
+    new BlobServiceClient(builder.Configuration.GetConnectionString("AzureStorage")));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
